@@ -1,0 +1,3 @@
+#!/bin/sh
+go get -d ./...
+CGO_ENABLE=0 gox -ldflags '-w -s' -output='build/invisible_{{.OS}}_{{.Arch}}'
