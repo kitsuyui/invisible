@@ -14,9 +14,9 @@ func TestIsGetInvisibleRune(t *testing.T) {
 func IsGetInvisibleRuneTester(t *testing.T, testRune rune, shouldBe bool) {
 	if IsGetInvisibleRune(testRune) != shouldBe {
 		if shouldBe {
-			t.Errorf("%s should be treated as invisible", testRune)
+			t.Errorf("%#U should be treated as invisible", testRune)
 		} else {
-			t.Errorf("%s should be treated as visible", testRune)
+			t.Errorf("%#U should be treated as visible", testRune)
 		}
 	}
 }
