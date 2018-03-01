@@ -2,6 +2,11 @@
 
 Embed noise or hidden message to text.
 
+[![CircleCI Status](https://circleci.com/gh/kitsuyui/invisible.svg?style=shield&circle-token=:circle-token)](https://circleci.com/gh/kitsuyui/invisible)
+[![Codecov Status](https://img.shields.io/codecov/c/github/kitsuyui/invisible.svg)](https://codecov.io/github/kitsuyui/invisible/)
+[![Github All Releases](https://img.shields.io/github/downloads/kitsuyui/invisible/total.svg)](https://github.com/kitsuyui/invisible/releases/latest)
+
+
 ## Add noise
 
 ```console
