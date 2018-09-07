@@ -36,9 +36,6 @@ func Embed(embedString string, reader *bufio.Reader, writer *bufio.Writer, repea
 				writer.WriteRune(encoded[0])
 				encoded = encoded[1:]
 			}
-			if repeat && len(encoded) == 0 {
-				encoded = []rune(Encode(embedString))
-			}
 		}
 		isFirst = false
 		writer.WriteRune(r)
