@@ -47,4 +47,4 @@ Hello, World!Hello, World!Hello, World!Hello, World!Hello, World!Hello, World!He
 
 ### Source
 
-The 3-Clause BSD License. See also LISENCE file.
+The 3-Clause BSD License. See also LICENSE file.
