@@ -3,7 +3,7 @@ jobs:
   test:
     working_directory: /go/src/github.com/kitsuyui/invisible
     docker:
-      - image: golang:1.14.1-stretch@sha256:a975dab2c99e7e46ccb4f23bf3c09758d9c1aa3c6fbd14e77b363304891ff121
+      - image: golang:1.14.3-stretch@sha256:d1508aa0c33bee81a31a71be0f445262e6129740b56c915ad91336eab89b6073
     steps:
       - checkout
       - setup_remote_docker
@@ -16,7 +16,7 @@ jobs:
   release:
     working_directory: /go/src/github.com/kitsuyui/invisible
     docker:
-      - image: golang:1.14.1-stretch@sha256:a975dab2c99e7e46ccb4f23bf3c09758d9c1aa3c6fbd14e77b363304891ff121
+      - image: golang:1.14.3-stretch@sha256:d1508aa0c33bee81a31a71be0f445262e6129740b56c915ad91336eab89b6073
     steps:
       - checkout
       - setup_remote_docker
