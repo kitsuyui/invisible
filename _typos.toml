@@ -1,0 +1,4 @@
+# typos is a Source code spell checker
+# https://github.com/crate-ci/typos
+[files]
+extend-exclude = ["example/**", "README.md"]
