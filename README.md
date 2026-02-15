@@ -2,7 +2,7 @@
 
 Embed noise or hidden message to text.
 
-[![Codecov Status](https://img.shields.io/codecov/c/github/kitsuyui/invisible.svg)](https://codecov.io/github/kitsuyui/invisible/)
+![Coverage](https://raw.githubusercontent.com/kitsuyui/octocov-central/main/badges/kitsuyui/invisible/coverage.svg)
 [![Github All Releases](https://img.shields.io/github/downloads/kitsuyui/invisible/total.svg)](https://github.com/kitsuyui/invisible/releases/latest)
 
 
