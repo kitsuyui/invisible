@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"os"
 
@@ -35,7 +36,10 @@ func (p *addNoise) SetFlags(f *flag.FlagSet) {
 func (p *addNoise) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
 	reader := bufio.NewReader(os.Stdin)
 	writer := bufio.NewWriter(os.Stdout)
-	simplenoise.AddRandomNoise(p.frequency, p.maxSize, reader, writer)
+	if err := simplenoise.AddRandomNoise(p.frequency, p.maxSize, reader, writer); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return subcommands.ExitFailure
+	}
 	return subcommands.ExitSuccess
 }
 
@@ -61,7 +65,10 @@ func (p *encode) SetFlags(f *flag.FlagSet) {
 func (p *encode) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
 	reader := bufio.NewReader(os.Stdin)
 	writer := bufio.NewWriter(os.Stdout)
-	embedding.Embed(p.message, reader, writer, true)
+	if err := embedding.Embed(p.message, reader, writer, true); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return subcommands.ExitFailure
+	}
 	return subcommands.ExitSuccess
 }
 
@@ -82,9 +89,19 @@ func (p *decode) SetFlags(f *flag.FlagSet) {}
 func (p *decode) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
 	reader := bufio.NewReader(os.Stdin)
 	writer := bufio.NewWriter(os.Stdout)
-	decoded := embedding.Extract(reader, bufio.NewWriter(ioutil.Discard))
-	writer.WriteString(decoded)
-	writer.Flush()
+	decoded, err := embedding.Extract(reader, bufio.NewWriter(ioutil.Discard))
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return subcommands.ExitFailure
+	}
+	if _, err := writer.WriteString(decoded); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return subcommands.ExitFailure
+	}
+	if err := writer.Flush(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return subcommands.ExitFailure
+	}
 	return subcommands.ExitSuccess
 }
 
