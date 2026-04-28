@@ -3,16 +3,27 @@ package embedding
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"strings"
 	"testing"
 )
+
+var errEmbeddingWriter = errors.New("embedding writer failed")
+
+type failingEmbeddingWriter struct{}
+
+func (failingEmbeddingWriter) Write(_ []byte) (int, error) {
+	return 0, errEmbeddingWriter
+}
 
 func TestSomething(t *testing.T) {
 	original := "Hello, World!"
 	reader := bufio.NewReader(strings.NewReader(original))
 	b := new(bytes.Buffer)
 	writer := bufio.NewWriter(b)
-	Embed(original, reader, writer, false)
+	if err := Embed(original, reader, writer, false); err != nil {
+		t.Fatal(err)
+	}
 	converted := b.String()
 	if original == converted && original != "" {
 		t.Errorf("%q == %q", original, converted)
@@ -20,9 +31,28 @@ func TestSomething(t *testing.T) {
 	reader = bufio.NewReader(bytes.NewReader(b.Bytes()))
 	b2 := new(bytes.Buffer)
 	writer = bufio.NewWriter(b2)
-	decoded := Extract(reader, writer)
+	decoded, err := Extract(reader, writer)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if original != decoded {
 		t.Errorf("Must be original = decoded (%q = %q) (decoded)", original, decoded)
+	}
+}
+
+func TestEmbedReturnsWriterError(t *testing.T) {
+	reader := bufio.NewReader(strings.NewReader("Hello"))
+	writer := bufio.NewWriter(failingEmbeddingWriter{})
+	if err := Embed("hidden", reader, writer, false); !errors.Is(err, errEmbeddingWriter) {
+		t.Fatalf("Embed() error = %v, want %v", err, errEmbeddingWriter)
+	}
+}
+
+func TestExtractReturnsWriterError(t *testing.T) {
+	reader := bufio.NewReader(strings.NewReader("Hello"))
+	writer := bufio.NewWriter(failingEmbeddingWriter{})
+	if _, err := Extract(reader, writer); !errors.Is(err, errEmbeddingWriter) {
+		t.Fatalf("Extract() error = %v, want %v", err, errEmbeddingWriter)
 	}
 }
 

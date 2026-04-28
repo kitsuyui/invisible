@@ -21,7 +21,7 @@ var INVISIBLE_RUNES_TO_UINT32 = []uint32{
 	binary.BigEndian.Uint32([]byte{0x00, 0x00, 0x00, 0x07}), // 0b000000000000000000000111
 }
 
-func Embed(embedString string, reader *bufio.Reader, writer *bufio.Writer, repeat bool) {
+func Embed(embedString string, reader *bufio.Reader, writer *bufio.Writer, repeat bool) error {
 	encoded := []rune(Encode(embedString))
 	isFirst := true
 	for {
@@ -30,29 +30,38 @@ func Embed(embedString string, reader *bufio.Reader, writer *bufio.Writer, repea
 			if err == io.EOF {
 				break
 			}
+			return err
 		}
 		if !isFirst {
 			if len(encoded) > 0 {
-				writer.WriteRune(encoded[0])
+				if _, err := writer.WriteRune(encoded[0]); err != nil {
+					return err
+				}
 				encoded = encoded[1:]
 			}
 		}
 		isFirst = false
-		writer.WriteRune(r)
+		if _, err := writer.WriteRune(r); err != nil {
+			return err
+		}
 	}
 	for len(encoded) > 0 {
-		writer.WriteRune(encoded[0])
+		if _, err := writer.WriteRune(encoded[0]); err != nil {
+			return err
+		}
 		encoded = encoded[1:]
 	}
-	writer.Flush()
+	return writer.Flush()
 }
 
-func Extract(reader *bufio.Reader, writer *bufio.Writer) string {
+func Extract(reader *bufio.Reader, writer *bufio.Writer) (string, error) {
 	b := new(bytes.Buffer)
 	noiseWriter := bufio.NewWriter(b)
-	simplenoise.DeNoiseAndWriteNoise(reader, writer, noiseWriter)
+	if err := simplenoise.DeNoiseAndWriteNoise(reader, writer, noiseWriter); err != nil {
+		return "", err
+	}
 	decoded := Decode(b.String())
-	return decoded
+	return decoded, nil
 }
 
 func Encode(text string) string {

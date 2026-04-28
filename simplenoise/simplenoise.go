@@ -9,7 +9,7 @@ import (
 	"github.com/kitsuyui/invisible/invisibles"
 )
 
-func AddRandomNoise(frequency float64, maxSize int, reader *bufio.Reader, writer *bufio.Writer) {
+func AddRandomNoise(frequency float64, maxSize int, reader *bufio.Reader, writer *bufio.Writer) error {
 	isFirst := true
 	for {
 		r, _, err := reader.ReadRune()
@@ -17,28 +17,33 @@ func AddRandomNoise(frequency float64, maxSize int, reader *bufio.Reader, writer
 			if err == io.EOF {
 				break
 			}
+			return err
 		}
 		if !isFirst {
 			for i := 0; i < maxSize; i++ {
 				if rand.Float64() < frequency {
 					ir := invisibles.GetInvisibleRune()
-					writer.WriteRune(ir)
+					if _, err := writer.WriteRune(ir); err != nil {
+						return err
+					}
 				}
 			}
 		}
 		isFirst = false
-		writer.WriteRune(r)
+		if _, err := writer.WriteRune(r); err != nil {
+			return err
+		}
 	}
-	writer.Flush()
+	return writer.Flush()
 }
 
-func DeNoise(reader io.Reader, writer io.Writer) {
+func DeNoise(reader io.Reader, writer io.Writer) error {
 	bufreader := bufio.NewReader(reader)
 	bufwriter := bufio.NewWriter(writer)
-	DeNoiseAndWriteNoise(bufreader, bufwriter, bufio.NewWriter(ioutil.Discard))
+	return DeNoiseAndWriteNoise(bufreader, bufwriter, bufio.NewWriter(ioutil.Discard))
 }
 
-func DeNoiseAndWriteNoise(reader io.Reader, writer io.Writer, noiseWriter io.Writer) {
+func DeNoiseAndWriteNoise(reader io.Reader, writer io.Writer, noiseWriter io.Writer) error {
 	bufReader := bufio.NewReader(reader)
 	bufWriter := bufio.NewWriter(writer)
 	noiseBufWriter := bufio.NewWriter(noiseWriter)
@@ -48,13 +53,20 @@ func DeNoiseAndWriteNoise(reader io.Reader, writer io.Writer, noiseWriter io.Wri
 			if err == io.EOF {
 				break
 			}
+			return err
 		}
 		if invisibles.IsGetInvisibleRune(r) {
-			noiseBufWriter.WriteRune(r)
+			if _, err := noiseBufWriter.WriteRune(r); err != nil {
+				return err
+			}
 		} else {
-			bufWriter.WriteRune(r)
+			if _, err := bufWriter.WriteRune(r); err != nil {
+				return err
+			}
 		}
 	}
-	bufWriter.Flush()
-	noiseBufWriter.Flush()
+	if err := bufWriter.Flush(); err != nil {
+		return err
+	}
+	return noiseBufWriter.Flush()
 }
