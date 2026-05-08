@@ -69,6 +69,12 @@ func TestDecodeBroken(t *testing.T) {
 	TryDecodeBroken(t, "にいはお")
 }
 
+func TestDecodeSkipsUnknownRunes(t *testing.T) {
+	if decoded := Decode("A"); decoded != "" {
+		t.Fatalf("Decode() = %q, want empty string for unknown runes", decoded)
+	}
+}
+
 func TryDecodeBroken(t *testing.T, text string) {
 	encoded := Encode(text)
 	Decode(encoded[:len(encoded)-1])
