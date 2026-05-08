@@ -116,7 +116,11 @@ func decodeNRunesToNBytes(n int, m int, rs []rune) []byte {
 	uint32Bytes := 4
 	cut := uint32Bytes - m
 	for i, r := range rs {
-		k := uint32(invisibleRuneToCode(r))
+		code := invisibleRuneToCode(r)
+		if code < 0 {
+			continue
+		}
+		k := uint32(code)
 		shift := uint32(m * (bitsPerBytes - i - 1))
 		decodedUint |= k << shift
 	}
