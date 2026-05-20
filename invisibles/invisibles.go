@@ -2,6 +2,8 @@ package invisibles
 
 import (
 	"math/rand"
+	"sync"
+	"time"
 )
 
 var invisibleRunes = [...]rune{
@@ -21,8 +23,25 @@ func InvisibleRunes() []rune {
 	return append([]rune(nil), invisibleRunes[:]...)
 }
 
-func GetInvisibleRune(r *rand.Rand) rune {
-	return invisibleRunes[r.Intn(len(invisibleRunes))]
+var invisibleRuneRand = newLockedRand(time.Now().UnixNano())
+
+type lockedRand struct {
+	mu sync.Mutex
+	r  *rand.Rand
+}
+
+func newLockedRand(seed int64) *lockedRand {
+	return &lockedRand{r: rand.New(rand.NewSource(seed))}
+}
+
+func (r *lockedRand) Intn(n int) int {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	return r.r.Intn(n)
+}
+
+func GetInvisibleRune() rune {
+	return invisibleRunes[invisibleRuneRand.Intn(len(invisibleRunes))]
 }
 
 func IsGetInvisibleRune(r rune) bool {
