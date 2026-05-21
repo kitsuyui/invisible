@@ -13,6 +13,18 @@ func TestGetInvisibleRune(t *testing.T) {
 	}
 }
 
+func TestInvisibleRunesReturnsCopy(t *testing.T) {
+	runes := InvisibleRunes()
+	runes[0] = 'A'
+
+	if IsGetInvisibleRune('A') {
+		t.Errorf("mutating returned runes must not mutate the package rune table")
+	}
+	if InvisibleRuneCode('\u200B') != 0 {
+		t.Errorf("mutating returned runes must not change rune codes")
+	}
+}
+
 func TestIsGetInvisibleRune(t *testing.T) {
 	IsGetInvisibleRuneTester(t, 'x', false)
 	IsGetInvisibleRuneTester(t, '\u2060', true)

@@ -10,7 +10,7 @@ import (
 	"github.com/kitsuyui/invisible/simplenoise"
 )
 
-var INVISIBLE_RUNES_TO_UINT32 = []uint32{
+var invisibleRunesToUint32 = [...]uint32{
 	binary.BigEndian.Uint32([]byte{0x00, 0xe0, 0x00, 0x00}), // 0b111000000000000000000000
 	binary.BigEndian.Uint32([]byte{0x00, 0x1c, 0x00, 0x00}), // 0b000111000000000000000000
 	binary.BigEndian.Uint32([]byte{0x00, 0x03, 0x80, 0x00}), // 0b000000111000000000000000
@@ -110,10 +110,13 @@ func encodeNbytesToMRunes(n int, m int, bs []byte) (rs []rune) {
 	uint32Bytes := 4
 	bitsPerBytes := 8
 	bin := binary.BigEndian.Uint32(padFirstToNBytes(uint32Bytes, bs))
-	for i, matching := range INVISIBLE_RUNES_TO_UINT32 {
+	for i, matching := range invisibleRunesToUint32 {
 		shift := uint(n * (bitsPerBytes - i - 1))
-		code := (bin & matching) >> shift
-		rs = append(rs, invisibles.INVISIBLE_RUNES[code])
+		code := int((bin & matching) >> shift)
+		r, ok := invisibles.InvisibleRune(code)
+		if ok {
+			rs = append(rs, r)
+		}
 	}
 	return rs
 }
@@ -138,12 +141,7 @@ func decodeNRunesToNBytes(n int, m int, rs []rune) []byte {
 }
 
 func invisibleRuneToCode(r rune) int {
-	for i, r2 := range invisibles.INVISIBLE_RUNES {
-		if r2 == r {
-			return i
-		}
-	}
-	return -1
+	return invisibles.InvisibleRuneCode(r)
 }
 
 func padLastToNBytes(n int, bs []byte) []byte {
