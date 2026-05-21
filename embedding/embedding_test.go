@@ -96,3 +96,14 @@ func TestInvisibleRuneToCodeFailure(t *testing.T) {
 		t.Errorf("When passed invisible rune then must be return -1")
 	}
 }
+
+func TestEncodeAndDecodeWithNullBytes(t *testing.T) {
+	// Null byte at the start of a chunk (was incorrectly stripped by bytes.Trim).
+	CheckEncodeAndDecodeIsReversible(t, "\x00AB")
+	// Null byte in the middle of a chunk (round-trips correctly before and after fix).
+	CheckEncodeAndDecodeIsReversible(t, "A\x00B")
+	// Null byte at the start of a non-last chunk (was incorrectly stripped).
+	CheckEncodeAndDecodeIsReversible(t, "ABC\x00EF")
+	// Null bytes spanning multiple chunks with leading null.
+	CheckEncodeAndDecodeIsReversible(t, "\x00ABCDEF")
+}

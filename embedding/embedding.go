@@ -92,8 +92,12 @@ func Decode(noiseText string) string {
 			offset = len(runes)
 		}
 		bs := decodeNRunesToNBytes(runeSizeDecodeFrom, byteSizeDecodeTo, runes[i:offset])
-		trimmed := bytes.Trim(bs, "\x00")
-		decoded = append(decoded, trimmed...)
+		// Only trim trailing null bytes from the last chunk (padding removal).
+		// Non-last chunks are always full 3-byte groups with no padding.
+		if offset >= len(runes) {
+			bs = bytes.TrimRight(bs, "\x00")
+		}
+		decoded = append(decoded, bs...)
 	}
 	return string(decoded)
 }
