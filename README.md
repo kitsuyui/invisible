@@ -14,6 +14,9 @@ $ invisible add-noise < example/plain.txt > example/noised.txt
 
 It looks normal. But the size is grown from 446 bytes to 1070 bytes by noise.
 
+> **Note**: `add-noise` output is non-deterministic — the invisible characters inserted vary on each run.
+> Use `--seed <N>` to get reproducible output (e.g. `--seed 42`). `encode` and `decode` are always deterministic.
+
 ```
 L⁡o​rem⁣ ⁢ip​sum ⁡d​o﻿lor⁡ ⁠sit⁡ a​met⁣,﻿ ⁠c‌ons⁠ect﻿et⁢ur⁠ ⁣a⁤di⁡p⁣isci‌n‌g e‌li⁢t,‌ ⁢se​d d⁡o‌ e​i⁡u⁠smo⁢d⁡ ​t⁠em⁡p﻿o​r i﻿n⁠cididu‌n⁡t ⁢u⁡t labo⁠re ​e⁡t​ ‌dolo⁣re​ mag‌n⁡a⁠ al⁣i​qua﻿.⁡ ⁤Ut en​im ad⁤ ‌mi﻿nim ⁡v⁢e⁣ni‌am, qui⁤s ⁢n⁡os⁣trud‌ ⁢e⁣xe‌rc⁠it﻿ati⁣on ‌u⁢l‌l⁢a​mc⁠o⁠ laboris n​i⁤si⁡ ​ut⁠ ⁢a⁠liq‌u​i⁣p e‌x e⁠a⁡ c‌o﻿mmo⁠do⁤ c﻿on⁤s⁣e⁠q⁡uat⁠. Duis aute iru⁠r⁤e ⁤d‌o﻿lor ⁤i⁣n⁢ ⁡r⁠e​pr​eh⁡e﻿nd⁤e⁠rit⁣ i⁣n⁣ vo⁡l⁣uptate⁠ v‌el⁣it ​e⁢s⁡s⁡e⁠ ⁠cil⁢l‌u​m dol​ore⁢ ​e⁢u ⁠f​u⁤g﻿i​a⁢t‌ ⁠n⁠ulla par⁣i﻿a﻿t​u⁠r​. ‌Except‌e​ur⁢ ⁤sin​t⁠ ﻿o﻿ccaecat cu​pid⁢a⁠tat ⁤n⁡o⁣n⁤ ⁠proide‌nt, ​sunt⁤ ⁡i‌n﻿ c﻿u⁡lp⁤a ⁢qui‌ off​i﻿c⁢i‌a dese​ru﻿n​t ‌mo‌l⁢li⁡t⁣ ​a⁢ni⁤m⁣ ​id ⁡est ﻿l⁤abo⁡r​u⁢m.
 

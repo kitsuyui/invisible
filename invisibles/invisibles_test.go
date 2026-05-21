@@ -1,9 +1,16 @@
 package invisibles
 
-import "testing"
+import (
+	"math/rand"
+	"testing"
+)
 
 func TestGetInvisibleRune(t *testing.T) {
-	GetInvisibleRune()
+	rng := rand.New(rand.NewSource(1))
+	r := GetInvisibleRune(rng)
+	if !IsGetInvisibleRune(r) {
+		t.Errorf("GetInvisibleRune() = %#U, want an invisible rune", r)
+	}
 }
 
 func TestIsGetInvisibleRune(t *testing.T) {

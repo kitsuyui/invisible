@@ -9,7 +9,7 @@ import (
 	"github.com/kitsuyui/invisible/invisibles"
 )
 
-func AddRandomNoise(frequency float64, maxSize int, reader *bufio.Reader, writer *bufio.Writer) error {
+func AddRandomNoise(rng *rand.Rand, frequency float64, maxSize int, reader *bufio.Reader, writer *bufio.Writer) error {
 	isFirst := true
 	for {
 		r, _, err := reader.ReadRune()
@@ -21,8 +21,8 @@ func AddRandomNoise(frequency float64, maxSize int, reader *bufio.Reader, writer
 		}
 		if !isFirst {
 			for i := 0; i < maxSize; i++ {
-				if rand.Float64() < frequency {
-					ir := invisibles.GetInvisibleRune()
+				if rng.Float64() < frequency {
+					ir := invisibles.GetInvisibleRune(rng)
 					if _, err := writer.WriteRune(ir); err != nil {
 						return err
 					}

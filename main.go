@@ -6,7 +6,9 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"os"
+	"time"
 
 	"github.com/google/subcommands"
 	"github.com/kitsuyui/invisible/embedding"
@@ -16,6 +18,7 @@ import (
 type addNoise struct {
 	frequency float64
 	maxSize   int
+	seed      int64
 }
 
 func (*addNoise) Name() string     { return "add-noise" }
@@ -23,6 +26,8 @@ func (*addNoise) Synopsis() string { return "read from stdin and write to stdout
 func (*addNoise) Usage() string {
 	return `add-noise:
 	Read from stdin and write to stdout with noise.
+	Output varies on each run (non-deterministic) unless --seed is specified.
+	Use --seed <N> for reproducible output. encode/decode are always deterministic.
 `
 }
 
@@ -31,12 +36,18 @@ func (p *addNoise) SetFlags(f *flag.FlagSet) {
 	f.Float64Var(&p.frequency, "f", 0.5, "frequency for noise")
 	f.IntVar(&p.maxSize, "noise-size", 1, "max noise in once")
 	f.IntVar(&p.maxSize, "s", 1, "max noise in once")
+	f.Int64Var(&p.seed, "seed", 0, "random seed (0 = use time-based random seed, non-deterministic)")
 }
 
 func (p *addNoise) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
+	seed := p.seed
+	if seed == 0 {
+		seed = time.Now().UnixNano()
+	}
+	rng := rand.New(rand.NewSource(seed))
 	reader := bufio.NewReader(os.Stdin)
 	writer := bufio.NewWriter(os.Stdout)
-	if err := simplenoise.AddRandomNoise(p.frequency, p.maxSize, reader, writer); err != nil {
+	if err := simplenoise.AddRandomNoise(rng, p.frequency, p.maxSize, reader, writer); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return subcommands.ExitFailure
 	}

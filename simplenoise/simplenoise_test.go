@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
+	"math/rand"
 	"strings"
 	"testing"
 )
@@ -25,10 +26,11 @@ func TestAddRandomNoiseAndDeNoise(t *testing.T) {
 
 func AddRandomNoiseAndDeNoiseIsReversive(t *testing.T, frequency float64, maxSize int, testText string) {
 	original := testText
+	rng := rand.New(rand.NewSource(42))
 	reader := bufio.NewReader(strings.NewReader(original))
 	b := new(bytes.Buffer)
 	writer := bufio.NewWriter(b)
-	if err := AddRandomNoise(frequency, maxSize, reader, writer); err != nil {
+	if err := AddRandomNoise(rng, frequency, maxSize, reader, writer); err != nil {
 		t.Fatal(err)
 	}
 	converted := b.String()
@@ -48,10 +50,29 @@ func AddRandomNoiseAndDeNoiseIsReversive(t *testing.T, frequency float64, maxSiz
 }
 
 func TestAddRandomNoiseReturnsWriterError(t *testing.T) {
+	rng := rand.New(rand.NewSource(0))
 	reader := bufio.NewReader(strings.NewReader("Hello"))
 	writer := bufio.NewWriter(failingSimpleNoiseWriter{})
-	if err := AddRandomNoise(0, 0, reader, writer); !errors.Is(err, errSimpleNoiseWriter) {
+	if err := AddRandomNoise(rng, 0, 0, reader, writer); !errors.Is(err, errSimpleNoiseWriter) {
 		t.Fatalf("AddRandomNoise() error = %v, want %v", err, errSimpleNoiseWriter)
+	}
+}
+
+func TestAddRandomNoiseIsReproducibleWithSameSeed(t *testing.T) {
+	input := "Hello, Reproducible!"
+	run := func() string {
+		rng := rand.New(rand.NewSource(12345))
+		reader := bufio.NewReader(strings.NewReader(input))
+		b := new(bytes.Buffer)
+		writer := bufio.NewWriter(b)
+		if err := AddRandomNoise(rng, 1.0, 2, reader, writer); err != nil {
+			t.Fatal(err)
+		}
+		return b.String()
+	}
+	first, second := run(), run()
+	if first != second {
+		t.Errorf("same seed produced different output: %q vs %q", first, second)
 	}
 }
 
