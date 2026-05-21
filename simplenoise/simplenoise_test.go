@@ -49,15 +49,6 @@ func AddRandomNoiseAndDeNoiseIsReversive(t *testing.T, frequency float64, maxSiz
 	}
 }
 
-func TestAddRandomNoiseReturnsWriterError(t *testing.T) {
-	rng := rand.New(rand.NewSource(0))
-	reader := bufio.NewReader(strings.NewReader("Hello"))
-	writer := bufio.NewWriter(failingSimpleNoiseWriter{})
-	if err := AddRandomNoise(rng, 0, 0, reader, writer); !errors.Is(err, errSimpleNoiseWriter) {
-		t.Fatalf("AddRandomNoise() error = %v, want %v", err, errSimpleNoiseWriter)
-	}
-}
-
 func TestAddRandomNoiseIsReproducibleWithSameSeed(t *testing.T) {
 	input := "Hello, Reproducible!"
 	run := func() string {
@@ -73,6 +64,27 @@ func TestAddRandomNoiseIsReproducibleWithSameSeed(t *testing.T) {
 	first, second := run(), run()
 	if first != second {
 		t.Errorf("same seed produced different output: %q vs %q", first, second)
+	}
+}
+
+func TestAddRandomNoiseReturnsWriterError(t *testing.T) {
+	rng := rand.New(rand.NewSource(0))
+	reader := bufio.NewReader(strings.NewReader("Hello"))
+	writer := bufio.NewWriter(failingSimpleNoiseWriter{})
+	if err := AddRandomNoise(rng, 0, 0, reader, writer); !errors.Is(err, errSimpleNoiseWriter) {
+		t.Fatalf("AddRandomNoise() error = %v, want %v", err, errSimpleNoiseWriter)
+	}
+}
+
+func TestDeNoiseWritesToPlainWriter(t *testing.T) {
+	// Regression: DeNoise must flush to a plain io.Writer, not just *bufio.Writer.
+	noisy := "H⁢ello" // H + INVISIBLE TIMES + ello
+	b := new(bytes.Buffer)
+	if err := DeNoise(strings.NewReader(noisy), b); err != nil {
+		t.Fatal(err)
+	}
+	if got := b.String(); got != "Hello" {
+		t.Errorf("DeNoise() = %q, want %q", got, "Hello")
 	}
 }
 
