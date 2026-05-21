@@ -2,7 +2,6 @@ package invisibles
 
 import (
 	"math/rand"
-	"time"
 )
 
 var INVISIBLE_RUNES = []rune{
@@ -18,13 +17,8 @@ var INVISIBLE_RUNES = []rune{
 	'\uFEFF', // ZERO WIDTH NO-BREAK SPACE
 }
 
-func init() {
-	seed := time.Now().UnixNano()
-	rand.Seed(seed)
-}
-
-func GetInvisibleRune() rune {
-	return INVISIBLE_RUNES[rand.Intn(len(INVISIBLE_RUNES))]
+func GetInvisibleRune(r *rand.Rand) rune {
+	return INVISIBLE_RUNES[r.Intn(len(INVISIBLE_RUNES))]
 }
 
 func IsGetInvisibleRune(r rune) bool {
