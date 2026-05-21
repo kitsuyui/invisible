@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"os"
+	"runtime/debug"
 	"time"
 
 	"github.com/google/subcommands"
@@ -128,6 +129,27 @@ func (p *decode) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) s
 	return subcommands.ExitSuccess
 }
 
+type versionCmd struct{}
+
+func (*versionCmd) Name() string     { return "version" }
+func (*versionCmd) Synopsis() string { return "print version information." }
+func (*versionCmd) Usage() string {
+	return `version:
+	Print version information.
+`
+}
+func (*versionCmd) SetFlags(f *flag.FlagSet) {}
+
+func (*versionCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
+	info, ok := debug.ReadBuildInfo()
+	if ok {
+		fmt.Println(info.Main.Version)
+	} else {
+		fmt.Println("(unknown)")
+	}
+	return subcommands.ExitSuccess
+}
+
 func main() {
 	subcommands.Register(subcommands.HelpCommand(), "")
 	subcommands.Register(subcommands.FlagsCommand(), "")
@@ -135,6 +157,7 @@ func main() {
 	subcommands.Register(&addNoise{}, "")
 	subcommands.Register(&encode{}, "")
 	subcommands.Register(&decode{}, "")
+	subcommands.Register(&versionCmd{}, "")
 
 	flag.Parse()
 	ctx := context.Background()

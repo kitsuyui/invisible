@@ -29,3 +29,13 @@ func TestEncodeEmptyMessage(t *testing.T) {
 	status := cmd.Execute(context.Background(), flag.NewFlagSet("encode", flag.ContinueOnError))
 	if status != subcommands.ExitUsageError {
 		t.Errorf("Execute() = %v, want ExitUsageError", status)
+	}
+}
+
+func TestVersionCmdReturnsSuccess(t *testing.T) {
+	cmd := &versionCmd{}
+	status := cmd.Execute(context.Background(), flag.NewFlagSet("version", flag.ContinueOnError))
+	if status != subcommands.ExitSuccess {
+		t.Errorf("Execute() = %v, want ExitSuccess", status)
+	}
+}
