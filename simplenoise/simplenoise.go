@@ -3,7 +3,6 @@ package simplenoise
 import (
 	"bufio"
 	"io"
-	"io/ioutil"
 	"math/rand"
 
 	"github.com/kitsuyui/invisible/invisibles"
@@ -38,9 +37,7 @@ func AddRandomNoise(rng *rand.Rand, frequency float64, maxSize int, reader *bufi
 }
 
 func DeNoise(reader io.Reader, writer io.Writer) error {
-	bufreader := bufio.NewReader(reader)
-	bufwriter := bufio.NewWriter(writer)
-	return DeNoiseAndWriteNoise(bufreader, bufwriter, bufio.NewWriter(ioutil.Discard))
+	return DeNoiseAndWriteNoise(reader, writer, io.Discard)
 }
 
 func DeNoiseAndWriteNoise(reader io.Reader, writer io.Writer, noiseWriter io.Writer) error {
