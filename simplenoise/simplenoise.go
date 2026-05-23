@@ -4,11 +4,30 @@ import (
 	"bufio"
 	"io"
 	"math/rand"
+	"sync"
+	"time"
 
 	"github.com/kitsuyui/invisible/invisibles"
 )
 
-func AddRandomNoise(rng *rand.Rand, frequency float64, maxSize int, reader *bufio.Reader, writer *bufio.Writer) error {
+var noiseRand = newLockedRand(time.Now().UnixNano())
+
+type lockedRand struct {
+	mu sync.Mutex
+	r  *rand.Rand
+}
+
+func newLockedRand(seed int64) *lockedRand {
+	return &lockedRand{r: rand.New(rand.NewSource(seed))}
+}
+
+func (r *lockedRand) Float64() float64 {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	return r.r.Float64()
+}
+
+func AddRandomNoise(frequency float64, maxSize int, reader *bufio.Reader, writer *bufio.Writer) error {
 	isFirst := true
 	for {
 		r, _, err := reader.ReadRune()
@@ -20,8 +39,8 @@ func AddRandomNoise(rng *rand.Rand, frequency float64, maxSize int, reader *bufi
 		}
 		if !isFirst {
 			for i := 0; i < maxSize; i++ {
-				if rng.Float64() < frequency {
-					ir := invisibles.GetInvisibleRune(rng)
+				if noiseRand.Float64() < frequency {
+					ir := invisibles.GetInvisibleRune()
 					if _, err := writer.WriteRune(ir); err != nil {
 						return err
 					}
