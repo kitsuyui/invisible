@@ -97,6 +97,56 @@ func TestInvisibleRuneToCodeFailure(t *testing.T) {
 	}
 }
 
+func TestEmbedRepeatEmbedsDifferentlyFromNoRepeat(t *testing.T) {
+	message := "Hi"
+	// Host text longer than what's needed to embed the message once.
+	// Encode("Hi") produces 8*ceil(2/3) = 8 invisible runes; host text of 200 chars
+	// ensures encoded runes would be exhausted well before the host ends.
+	hostText := strings.Repeat("Hello World! ", 20)
+
+	embed := func(rep bool) string {
+		reader := bufio.NewReader(strings.NewReader(hostText))
+		b := new(bytes.Buffer)
+		writer := bufio.NewWriter(b)
+		if err := Embed(message, reader, writer, rep); err != nil {
+			t.Fatal(err)
+		}
+		return b.String()
+	}
+
+	withRepeat := embed(true)
+	withoutRepeat := embed(false)
+
+	if withRepeat == withoutRepeat {
+		t.Error("Embed with repeat=true should produce different output than repeat=false for long host text")
+	}
+}
+
+func TestEmbedRepeatExtractRecoversMessage(t *testing.T) {
+	message := "Hi"
+	hostText := strings.Repeat("Hello World! ", 20)
+
+	reader := bufio.NewReader(strings.NewReader(hostText))
+	b := new(bytes.Buffer)
+	writer := bufio.NewWriter(b)
+	if err := Embed(message, reader, writer, true); err != nil {
+		t.Fatal(err)
+	}
+
+	reader2 := bufio.NewReader(bytes.NewReader(b.Bytes()))
+	b2 := new(bytes.Buffer)
+	writer2 := bufio.NewWriter(b2)
+	decoded, err := Extract(reader2, writer2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Extract decodes all embedded invisible characters. With repeat the decoded
+	// string will be message repeated; check that it starts with the original message.
+	if !strings.HasPrefix(decoded, message) {
+		t.Errorf("Extract after Embed(repeat=true): got %q, want prefix %q", decoded, message)
+	}
+}
+
 func TestEncodeAndDecodeWithNullBytes(t *testing.T) {
 	// Null byte at the start of a chunk (was incorrectly stripped by bytes.Trim).
 	CheckEncodeAndDecodeIsReversible(t, "\x00AB")

@@ -22,7 +22,8 @@ var INVISIBLE_RUNES_TO_UINT32 = []uint32{
 }
 
 func Embed(embedString string, reader *bufio.Reader, writer *bufio.Writer, repeat bool) error {
-	encoded := []rune(Encode(embedString))
+	originalEncoded := []rune(Encode(embedString))
+	encoded := originalEncoded
 	isFirst := true
 	for {
 		r, _, err := reader.ReadRune()
@@ -33,6 +34,9 @@ func Embed(embedString string, reader *bufio.Reader, writer *bufio.Writer, repea
 			return err
 		}
 		if !isFirst {
+			if len(encoded) == 0 && repeat {
+				encoded = originalEncoded
+			}
 			if len(encoded) > 0 {
 				if _, err := writer.WriteRune(encoded[0]); err != nil {
 					return err
