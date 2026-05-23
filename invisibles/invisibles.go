@@ -4,7 +4,7 @@ import (
 	"math/rand"
 )
 
-var INVISIBLE_RUNES = []rune{
+var invisibleRunes = [...]rune{
 	// '\u180E', // MONGOLIAN VOWEL SEPARATOR
 	'\u200B', // ZERO WIDTH SPACE
 	'\u200C', // ZERO WIDTH NON-JOINER
@@ -17,15 +17,30 @@ var INVISIBLE_RUNES = []rune{
 	'\uFEFF', // ZERO WIDTH NO-BREAK SPACE
 }
 
+func InvisibleRunes() []rune {
+	return append([]rune(nil), invisibleRunes[:]...)
+}
+
 func GetInvisibleRune(r *rand.Rand) rune {
-	return INVISIBLE_RUNES[r.Intn(len(INVISIBLE_RUNES))]
+	return invisibleRunes[r.Intn(len(invisibleRunes))]
 }
 
 func IsGetInvisibleRune(r rune) bool {
-	for _, r2 := range INVISIBLE_RUNES {
+	return InvisibleRuneCode(r) >= 0
+}
+
+func InvisibleRune(index int) (rune, bool) {
+	if index < 0 || index >= len(invisibleRunes) {
+		return 0, false
+	}
+	return invisibleRunes[index], true
+}
+
+func InvisibleRuneCode(r rune) int {
+	for i, r2 := range invisibleRunes {
 		if r == r2 {
-			return true
+			return i
 		}
 	}
-	return false
+	return -1
 }

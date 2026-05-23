@@ -6,6 +6,8 @@ import (
 	"errors"
 	"strings"
 	"testing"
+
+	"github.com/kitsuyui/invisible/invisibles"
 )
 
 var errEmbeddingWriter = errors.New("embedding writer failed")
@@ -63,6 +65,13 @@ func TestEncodeAndDecodeIsReversible(t *testing.T) {
 	CheckEncodeAndDecodeIsReversible(t, "Hello, World!!!!")
 	CheckEncodeAndDecodeIsReversible(t, "Hello, World!!!!!")
 	CheckEncodeAndDecodeIsReversible(t, "Good Morning")
+}
+
+func TestEncodeAndDecodeDoesNotUseMutableRuneCopies(t *testing.T) {
+	runes := invisibles.InvisibleRunes()
+	runes[0] = 'A'
+
+	CheckEncodeAndDecodeIsReversible(t, "Hello, World!")
 }
 
 func TestDecodeBroken(t *testing.T) {
