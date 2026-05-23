@@ -45,6 +45,14 @@ $ invisible decode < example/embeded.txt
 Hello, World!Hello, World!Hello, World!Hello, World!Hello, World!Hello, World!Hello, World!Hello, World!Hello, World!Hello, World!Hello, World!Hello, World!
 ```
 
+## Version
+
+```console
+$ invisible version
+```
+
+Prints the installed version. Returns `(devel)` when built from source and `(unknown)` when build information is unavailable.
+
 ## LICENSE
 
 ### Source
