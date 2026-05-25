@@ -4,11 +4,28 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/binary"
+	"fmt"
 	"io"
 
 	"github.com/kitsuyui/invisible/invisibles"
 	"github.com/kitsuyui/invisible/simplenoise"
 )
+
+// maxNoiseBufBytes caps the noise buffer in Extract to guard against OOM from
+// inputs crafted with large numbers of invisible runes.
+const maxNoiseBufBytes int64 = 1 << 20 // 1 MiB
+
+type limitedBuffer struct {
+	buf *bytes.Buffer
+	max int64
+}
+
+func (l *limitedBuffer) Write(p []byte) (int, error) {
+	if int64(l.buf.Len())+int64(len(p)) > l.max {
+		return 0, fmt.Errorf("noise buffer limit exceeded (%d bytes)", l.max)
+	}
+	return l.buf.Write(p)
+}
 
 var invisibleRunesToUint32 = [...]uint32{
 	binary.BigEndian.Uint32([]byte{0x00, 0xe0, 0x00, 0x00}), // 0b111000000000000000000000
@@ -60,7 +77,8 @@ func Embed(embedString string, reader *bufio.Reader, writer *bufio.Writer, repea
 
 func Extract(reader *bufio.Reader, writer *bufio.Writer) (string, error) {
 	b := new(bytes.Buffer)
-	noiseWriter := bufio.NewWriter(b)
+	lb := &limitedBuffer{buf: b, max: maxNoiseBufBytes}
+	noiseWriter := bufio.NewWriter(lb)
 	if err := simplenoise.DeNoiseAndWriteNoise(reader, writer, noiseWriter); err != nil {
 		return "", err
 	}
