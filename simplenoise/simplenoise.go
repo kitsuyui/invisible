@@ -27,6 +27,12 @@ func (r *lockedRand) Float64() float64 {
 	return r.r.Float64()
 }
 
+// AddRandomNoise inserts invisible Unicode characters between runes read from
+// reader and writes the result to writer. frequency controls the per-slot
+// probability of inserting a noise character: values in [0.0, 1.0] behave as
+// a probability (0.0 = no noise, 1.0 = noise on every slot). Values above 1.0
+// guarantee insertion on every slot; values below 0.0 suppress all noise.
+// maxSize is the number of noise-insertion slots between consecutive runes.
 func AddRandomNoise(frequency float64, maxSize int, reader *bufio.Reader, writer *bufio.Writer) error {
 	isFirst := true
 	for {

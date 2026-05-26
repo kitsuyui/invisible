@@ -28,8 +28,8 @@ func (*addNoise) Usage() string {
 }
 
 func (p *addNoise) SetFlags(f *flag.FlagSet) {
-	f.Float64Var(&p.frequency, "frequency", 0.5, "frequency for noise")
-	f.Float64Var(&p.frequency, "f", 0.5, "frequency for noise")
+	f.Float64Var(&p.frequency, "frequency", 0.5, "noise insertion probability [0.0, 1.0]; values ≥ 1.0 guarantee insertion, values < 0.0 are rejected")
+	f.Float64Var(&p.frequency, "f", 0.5, "noise insertion probability [0.0, 1.0]; values ≥ 1.0 guarantee insertion, values < 0.0 are rejected")
 	f.IntVar(&p.maxSize, "noise-size", 1, "max noise in once")
 	f.IntVar(&p.maxSize, "s", 1, "max noise in once")
 }
