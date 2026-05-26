@@ -156,6 +156,47 @@ func TestEmbedRepeatExtractRecoversMessage(t *testing.T) {
 	}
 }
 
+// TestEmbedTrailingBlockMode covers the case where the host text is shorter
+// than the encoded message rune count, triggering trailing-block mode: all
+// remaining encoded runes are appended as a contiguous block after the last
+// visible character. The round-trip must still recover the original message.
+func TestEmbedTrailingBlockMode(t *testing.T) {
+	message := "AB"
+	// "x" is a single-character host: isFirst prevents any interleaved invisible
+	// rune from being inserted before it, so all encoded runes go to the trailing block.
+	hostText := "x"
+
+	reader := bufio.NewReader(strings.NewReader(hostText))
+	b := new(bytes.Buffer)
+	writer := bufio.NewWriter(b)
+	if err := Embed(message, reader, writer, false); err != nil {
+		t.Fatal(err)
+	}
+
+	embedded := b.String()
+	if embedded == hostText {
+		t.Error("Embed produced no invisible runes; trailing-block mode did not activate")
+	}
+
+	// The embedded output must start with the host text visible character.
+	embeddedRunes := []rune(embedded)
+	if embeddedRunes[0] != rune(hostText[0]) {
+		t.Errorf("first rune = %q, want %q", embeddedRunes[0], rune(hostText[0]))
+	}
+
+	// Round-trip: Extract must recover the original message.
+	reader2 := bufio.NewReader(bytes.NewReader(b.Bytes()))
+	b2 := new(bytes.Buffer)
+	writer2 := bufio.NewWriter(b2)
+	decoded, err := Extract(reader2, writer2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if decoded != message {
+		t.Errorf("Extract after trailing-block Embed: got %q, want %q", decoded, message)
+	}
+}
+
 func TestEncodeAndDecodeWithNullBytes(t *testing.T) {
 	// Null byte at the start of a chunk (was incorrectly stripped by bytes.Trim).
 	CheckEncodeAndDecodeIsReversible(t, "\x00AB")
