@@ -26,7 +26,7 @@ L⁡o​rem⁣ ⁢ip​sum ⁡d​o﻿lor⁡ ⁠sit⁡ a​met⁣,﻿ ⁠c‌ons
 ## Encode
 
 ```console
-$ invisible encode -m 'Hello, World!' < example/plain.txt > example/embeded.txt
+$ invisible encode -m 'Hello, World!' < example/plain.txt > example/embedded.txt
 ```
 
 ## Encoded text
@@ -41,7 +41,7 @@ L⁠o⁠r​e⁤m⁠ ⁣i⁣p⁢s⁡u⁡m​ ⁤d﻿o⁢l⁣o⁢r‌ ​s​i⁣
 ## Decode
 
 ```console
-$ invisible decode < example/embeded.txt
+$ invisible decode < example/embedded.txt
 Hello, World!Hello, World!Hello, World!Hello, World!Hello, World!Hello, World!Hello, World!Hello, World!Hello, World!Hello, World!Hello, World!Hello, World!
 ```
 
