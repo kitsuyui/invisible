@@ -166,3 +166,17 @@ func TestEncodeAndDecodeWithNullBytes(t *testing.T) {
 	// Null bytes spanning multiple chunks with leading null.
 	CheckEncodeAndDecodeIsReversible(t, "\x00ABCDEF")
 }
+
+func TestLimitedBufferRejectsWriteOverLimit(t *testing.T) {
+	b := new(bytes.Buffer)
+	lb := &limitedBuffer{buf: b, max: 4}
+	if _, err := lb.Write([]byte("abcd")); err != nil {
+		t.Fatalf("Write within limit: %v", err)
+	}
+	if _, err := lb.Write([]byte("e")); err == nil {
+		t.Fatal("Write over limit: expected error, got nil")
+	}
+	if b.String() != "abcd" {
+		t.Errorf("Buffer contents after rejected write: got %q, want %q", b.String(), "abcd")
+	}
+}
