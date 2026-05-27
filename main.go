@@ -107,7 +107,7 @@ func (p *decode) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) s
 		fmt.Fprintln(os.Stderr, err)
 		return subcommands.ExitFailure
 	}
-	if _, err := writer.WriteString(decoded); err != nil {
+	if _, err := writer.WriteString(stripANSI(decoded)); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return subcommands.ExitFailure
 	}
