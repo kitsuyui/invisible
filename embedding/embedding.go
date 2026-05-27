@@ -38,6 +38,27 @@ var invisibleRunesToUint32 = [...]uint32{
 	binary.BigEndian.Uint32([]byte{0x00, 0x00, 0x00, 0x07}), // 0b000000000000000000000111
 }
 
+// Embed hides embedString in the host text from reader by interleaving
+// invisible Unicode runes into writer.
+//
+// The encoding operates in two phases depending on the relative lengths of the
+// host text and the encoded message rune sequence:
+//
+//  1. Interleave mode: while visible characters and encoded runes both remain,
+//     one invisible rune is inserted immediately before each visible character,
+//     except before the very first visible character (isFirst guard). This
+//     distributes invisible runes evenly through the host text.
+//
+//  2. Trailing-block mode: if encoded runes remain after the host text is
+//     exhausted (i.e. len([]rune(Encode(embedString))) > number of visible chars),
+//     the remaining runes are appended as a contiguous block at the end of the
+//     output. Contiguous invisible runes are more detectable by analysis tools
+//     than interleaved ones; callers should prefer host text at least as long as
+//     len([]rune(Encode(embedString))) to stay in interleave mode.
+//
+// The repeat parameter causes the encoded rune sequence to cycle back to the
+// beginning once exhausted, but only applies in interleave mode while visible
+// characters remain in the host text. It has no effect in trailing-block mode.
 func Embed(embedString string, reader *bufio.Reader, writer *bufio.Writer, repeat bool) error {
 	originalEncoded := []rune(Encode(embedString))
 	encoded := originalEncoded
