@@ -21,6 +21,10 @@ func TestInvisibleRunesReturnsCopy(t *testing.T) {
 func TestIsGetInvisibleRune(t *testing.T) {
 	IsGetInvisibleRuneTester(t, 'x', false)
 	IsGetInvisibleRuneTester(t, '\u2060', true)
+	IsGetInvisibleRuneTester(t, EncodingFormatMarkerRune, true)
+	if InvisibleRuneCode(EncodingFormatMarkerRune) != -1 {
+		t.Errorf("%#U must be reserved for metadata, not mapped as data", EncodingFormatMarkerRune)
+	}
 }
 
 func IsGetInvisibleRuneTester(t *testing.T, testRune rune, shouldBe bool) {

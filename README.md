@@ -45,6 +45,12 @@ $ invisible decode < example/embedded.txt
 Hello, World!Hello, World!Hello, World!Hello, World!Hello, World!Hello, World!Hello, World!Hello, World!Hello, World!Hello, World!Hello, World!Hello, World!
 ```
 
+## Encoding format
+
+Encoded messages start with an invisible `v1` format marker. The decoder still
+accepts older markerless payloads for compatibility, and rejects payloads that
+use the reserved marker prefix with an unsupported version.
+
 ## Version
 
 ```console
