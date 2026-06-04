@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
+	"io"
 	"strings"
 	"testing"
 
@@ -67,6 +68,46 @@ func TestEncodeAndDecodeIsReversible(t *testing.T) {
 	CheckEncodeAndDecodeIsReversible(t, "Good Morning")
 }
 
+func TestEncodeAddsEncodingFormatMarker(t *testing.T) {
+	encoded := Encode("Hello, World!")
+	if !strings.HasPrefix(encoded, encodingFormatMarkerV1) {
+		t.Fatal("Encode() did not prefix the encoding format marker")
+	}
+}
+
+func TestDecodeAcceptsLegacyMarkerlessPayload(t *testing.T) {
+	encoded := encodeLegacy("Hello, World!")
+	if strings.HasPrefix(encoded, encodingFormatMarkerPrefix) {
+		t.Fatal("legacy encoded payload unexpectedly starts with the format marker prefix")
+	}
+	if decoded := Decode(encoded); decoded != "Hello, World!" {
+		t.Fatalf("Decode() = %q, want legacy payload", decoded)
+	}
+}
+
+func TestDecodeStrictRejectsUnsupportedEncodingFormat(t *testing.T) {
+	_, err := DecodeStrict(encodingFormatMarkerPrefix + "\u200C" + encodeLegacy("Hello"))
+	if !errors.Is(err, ErrUnsupportedEncodingFormat) {
+		t.Fatalf("DecodeStrict() error = %v, want %v", err, ErrUnsupportedEncodingFormat)
+	}
+}
+
+func TestDecodeReturnsEmptyForUnsupportedEncodingFormat(t *testing.T) {
+	decoded := Decode(encodingFormatMarkerPrefix + "\u200C" + encodeLegacy("Hello"))
+	if decoded != "" {
+		t.Fatalf("Decode() = %q, want empty string for unsupported encoding format", decoded)
+	}
+}
+
+func TestExtractRejectsUnsupportedEncodingFormat(t *testing.T) {
+	reader := bufio.NewReader(strings.NewReader(encodingFormatMarkerPrefix + "\u200C" + encodeLegacy("Hello")))
+	writer := bufio.NewWriter(io.Discard)
+	_, err := Extract(reader, writer)
+	if !errors.Is(err, ErrUnsupportedEncodingFormat) {
+		t.Fatalf("Extract() error = %v, want %v", err, ErrUnsupportedEncodingFormat)
+	}
+}
+
 func TestEncodeAndDecodeDoesNotUseMutableRuneCopies(t *testing.T) {
 	runes := invisibles.InvisibleRunes()
 	runes[0] = 'A'
@@ -109,8 +150,8 @@ func TestInvisibleRuneToCodeFailure(t *testing.T) {
 func TestEmbedRepeatEmbedsDifferentlyFromNoRepeat(t *testing.T) {
 	message := "Hi"
 	// Host text longer than what's needed to embed the message once.
-	// Encode("Hi") produces 8*ceil(2/3) = 8 invisible runes; host text of 200 chars
-	// ensures encoded runes would be exhausted well before the host ends.
+	// The host text is long enough that encoded runes are exhausted well before
+	// the host ends.
 	hostText := strings.Repeat("Hello World! ", 20)
 
 	embed := func(rep bool) string {
@@ -153,6 +194,9 @@ func TestEmbedRepeatExtractRecoversMessage(t *testing.T) {
 	// string will be message repeated; check that it starts with the original message.
 	if !strings.HasPrefix(decoded, message) {
 		t.Errorf("Extract after Embed(repeat=true): got %q, want prefix %q", decoded, message)
+	}
+	if strings.Contains(decoded, "invisible:encoding") {
+		t.Errorf("Extract after Embed(repeat=true) leaked encoding marker in decoded text: %q", decoded)
 	}
 }
 

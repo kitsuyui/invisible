@@ -19,6 +19,10 @@ var invisibleRunes = [...]rune{
 	'\uFEFF', // ZERO WIDTH NO-BREAK SPACE
 }
 
+// EncodingFormatMarkerRune is reserved for encoding format markers. It is
+// extracted as invisible metadata, but is not part of the legacy data alphabet.
+const EncodingFormatMarkerRune = '\u200D' // ZERO WIDTH JOINER
+
 func InvisibleRunes() []rune {
 	return append([]rune(nil), invisibleRunes[:]...)
 }
@@ -45,7 +49,7 @@ func GetInvisibleRune() rune {
 }
 
 func IsGetInvisibleRune(r rune) bool {
-	return InvisibleRuneCode(r) >= 0
+	return r == EncodingFormatMarkerRune || InvisibleRuneCode(r) >= 0
 }
 
 func InvisibleRune(index int) (rune, bool) {

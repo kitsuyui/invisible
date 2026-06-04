@@ -4,8 +4,10 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/kitsuyui/invisible/invisibles"
 	"github.com/kitsuyui/invisible/simplenoise"
@@ -14,6 +16,15 @@ import (
 // maxNoiseBufBytes caps the noise buffer in Extract to guard against OOM from
 // inputs crafted with large numbers of invisible runes.
 const maxNoiseBufBytes int64 = 1 << 20 // 1 MiB
+
+const (
+	encodingFormatMarkerPrefix = string(invisibles.EncodingFormatMarkerRune) + string(invisibles.EncodingFormatMarkerRune)
+	encodingFormatMarkerV1     = encodingFormatMarkerPrefix + "\u200B"
+)
+
+// ErrUnsupportedEncodingFormat reports an encoded payload with a reserved
+// format marker prefix that this decoder does not support.
+var ErrUnsupportedEncodingFormat = errors.New("unsupported invisible encoding format")
 
 type limitedBuffer struct {
 	buf *bytes.Buffer
@@ -60,8 +71,8 @@ var invisibleRunesToUint32 = [...]uint32{
 // beginning once exhausted, but only applies in interleave mode while visible
 // characters remain in the host text. It has no effect in trailing-block mode.
 func Embed(embedString string, reader *bufio.Reader, writer *bufio.Writer, repeat bool) error {
-	originalEncoded := []rune(Encode(embedString))
-	encoded := originalEncoded
+	originalEncoded := []rune(encodeLegacy(embedString))
+	encoded := append([]rune(encodingFormatMarkerV1), originalEncoded...)
 	isFirst := true
 	for {
 		r, _, err := reader.ReadRune()
@@ -103,11 +114,14 @@ func Extract(reader *bufio.Reader, writer *bufio.Writer) (string, error) {
 	if err := simplenoise.DeNoiseAndWriteNoise(reader, writer, noiseWriter); err != nil {
 		return "", err
 	}
-	decoded := Decode(b.String())
-	return decoded, nil
+	return DecodeStrict(b.String())
 }
 
 func Encode(text string) string {
+	return encodingFormatMarkerV1 + encodeLegacy(text)
+}
+
+func encodeLegacy(text string) string {
 	var encoded []rune
 	bs := []byte(text)
 	byteSizeEncodeFrom := 3
@@ -125,6 +139,27 @@ func Encode(text string) string {
 }
 
 func Decode(noiseText string) string {
+	decoded, err := DecodeStrict(noiseText)
+	if err != nil {
+		return ""
+	}
+	return decoded
+}
+
+// DecodeStrict decodes markerless legacy payloads and v1-marked payloads.
+// Unsupported marked payloads return ErrUnsupportedEncodingFormat.
+func DecodeStrict(noiseText string) (string, error) {
+	switch {
+	case strings.HasPrefix(noiseText, encodingFormatMarkerV1):
+		return decodeLegacy(strings.TrimPrefix(noiseText, encodingFormatMarkerV1)), nil
+	case strings.HasPrefix(noiseText, encodingFormatMarkerPrefix):
+		return "", ErrUnsupportedEncodingFormat
+	default:
+		return decodeLegacy(noiseText), nil
+	}
+}
+
+func decodeLegacy(noiseText string) string {
 	var decoded []byte
 	runes := []rune(noiseText)
 	runeSizeDecodeFrom := 8
