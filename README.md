@@ -6,6 +6,21 @@ Embed noise or hidden message to text.
 [![Github All Releases](https://img.shields.io/github/downloads/kitsuyui/invisible/total.svg)](https://github.com/kitsuyui/invisible/releases/latest)
 
 
+## Install
+
+Download prebuilt binaries from the
+[latest GitHub release](https://github.com/kitsuyui/invisible/releases/latest).
+
+To install from source with Go:
+
+```console
+$ go install github.com/kitsuyui/invisible@latest
+```
+
+For local development builds, run `go build -o invisible .` from the repository
+root. The `bin/build.sh` script is available for release-style cross-platform
+builds.
+
 ## Add noise
 
 ```console
@@ -16,6 +31,13 @@ It looks normal. But the size is grown from 446 bytes to 1070 bytes by noise.
 
 > **Note**: `add-noise` output is non-deterministic — the invisible characters inserted vary on each run.
 > Use `--seed <N>` to get reproducible output (e.g. `--seed 42`). `encode` and `decode` are always deterministic.
+
+`add-noise` accepts these options:
+
+- `--frequency <rate>` / `-f <rate>`: noise insertion probability. The default
+  is `0.5`. Negative values are rejected.
+- `--noise-size <count>` / `-s <count>`: maximum number of invisible characters
+  inserted at once. The default is `1`.
 
 ```
 L⁡o​rem⁣ ⁢ip​sum ⁡d​o﻿lor⁡ ⁠sit⁡ a​met⁣,﻿ ⁠c‌ons⁠ect﻿et⁢ur⁠ ⁣a⁤di⁡p⁣isci‌n‌g e‌li⁢t,‌ ⁢se​d d⁡o‌ e​i⁡u⁠smo⁢d⁡ ​t⁠em⁡p﻿o​r i﻿n⁠cididu‌n⁡t ⁢u⁡t labo⁠re ​e⁡t​ ‌dolo⁣re​ mag‌n⁡a⁠ al⁣i​qua﻿.⁡ ⁤Ut en​im ad⁤ ‌mi﻿nim ⁡v⁢e⁣ni‌am, qui⁤s ⁢n⁡os⁣trud‌ ⁢e⁣xe‌rc⁠it﻿ati⁣on ‌u⁢l‌l⁢a​mc⁠o⁠ laboris n​i⁤si⁡ ​ut⁠ ⁢a⁠liq‌u​i⁣p e‌x e⁠a⁡ c‌o﻿mmo⁠do⁤ c﻿on⁤s⁣e⁠q⁡uat⁠. Duis aute iru⁠r⁤e ⁤d‌o﻿lor ⁤i⁣n⁢ ⁡r⁠e​pr​eh⁡e﻿nd⁤e⁠rit⁣ i⁣n⁣ vo⁡l⁣uptate⁠ v‌el⁣it ​e⁢s⁡s⁡e⁠ ⁠cil⁢l‌u​m dol​ore⁢ ​e⁢u ⁠f​u⁤g﻿i​a⁢t‌ ⁠n⁠ulla par⁣i﻿a﻿t​u⁠r​. ‌Except‌e​ur⁢ ⁤sin​t⁠ ﻿o﻿ccaecat cu​pid⁢a⁠tat ⁤n⁡o⁣n⁤ ⁠proide‌nt, ​sunt⁤ ⁡i‌n﻿ c﻿u⁡lp⁤a ⁢qui‌ off​i﻿c⁢i‌a dese​ru﻿n​t ‌mo‌l⁢li⁡t⁣ ​a⁢ni⁤m⁣ ​id ⁡est ﻿l⁤abo⁡r​u⁢m.
