@@ -81,6 +81,21 @@ $ invisible version
 
 Prints the installed version. Returns `(devel)` when built from source and `(unknown)` when build information is unavailable.
 
+## Development
+
+Install [lefthook](https://github.com/evilmartians/lefthook) and run the following command once after cloning:
+
+```console
+$ lefthook install
+```
+
+This sets up the following local Git hooks that mirror the CI checks:
+
+- **pre-commit**: runs `go vet ./...` to catch common issues before each commit.
+- **pre-push**: runs `go vet ./...` and `go test ./...` to verify correctness before pushing.
+
+CI still runs the full test suite on every pull request and push to `main` — the hooks only bring that feedback earlier, during local development.
+
 ## LICENSE
 
 ### Source
