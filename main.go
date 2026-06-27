@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -46,7 +47,7 @@ func (p *addNoise) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{})
 	reader := bufio.NewReader(os.Stdin)
 	writer := bufio.NewWriter(os.Stdout)
 	if err := simplenoise.AddRandomNoise(p.frequency, p.maxSize, reader, writer); err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		printCommandError("add-noise", "add random noise", err)
 		return subcommands.ExitFailure
 	}
 	return subcommands.ExitSuccess
@@ -79,7 +80,7 @@ func (p *encode) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) s
 	reader := bufio.NewReader(os.Stdin)
 	writer := bufio.NewWriter(os.Stdout)
 	if err := embedding.Embed(p.message, reader, writer, true); err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		printCommandError("encode", "embed message", err)
 		return subcommands.ExitFailure
 	}
 	return subcommands.ExitSuccess
@@ -104,15 +105,15 @@ func (p *decode) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) s
 	writer := bufio.NewWriter(os.Stdout)
 	decoded, err := embedding.Extract(reader, bufio.NewWriter(io.Discard))
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		printCommandError("decode", "extract hidden message", err)
 		return subcommands.ExitFailure
 	}
 	if _, err := writer.WriteString(stripANSI(decoded)); err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		printCommandError("decode", "write decoded message", err)
 		return subcommands.ExitFailure
 	}
 	if err := writer.Flush(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		printCommandError("decode", "flush decoded message", err)
 		return subcommands.ExitFailure
 	}
 	return subcommands.ExitSuccess
@@ -128,6 +129,13 @@ func (*versionCmd) Usage() string {
 `
 }
 func (*versionCmd) SetFlags(f *flag.FlagSet) {}
+
+func printCommandError(command string, stage string, err error) {
+	if err == nil {
+		err = errors.New("unknown error")
+	}
+	fmt.Fprintf(os.Stderr, "error: %s: %s: %v\n", command, stage, err)
+}
 
 func (*versionCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
 	info, ok := debug.ReadBuildInfo()
