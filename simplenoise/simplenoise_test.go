@@ -71,3 +71,31 @@ func TestDeNoiseReturnsWriterError(t *testing.T) {
 		t.Fatalf("DeNoise() error = %v, want %v", err, errSimpleNoiseWriter)
 	}
 }
+
+func TestDeNoiseAndWriteNoiseWritesExtractedNoise(t *testing.T) {
+	// Regression: the noiseWriter argument is the only path that exposes the
+	// invisible runes stripped out during DeNoise; DeNoise() itself discards
+	// them via io.Discard, so a test that only calls DeNoise cannot catch a
+	// regression here.
+	noisy := "H⁢el⁣lo" // H + INVISIBLE TIMES + el + INVISIBLE SEPARATOR + lo
+	plain := new(bytes.Buffer)
+	noise := new(bytes.Buffer)
+	if err := DeNoiseAndWriteNoise(strings.NewReader(noisy), plain, noise); err != nil {
+		t.Fatal(err)
+	}
+	if got := plain.String(); got != "Hello" {
+		t.Errorf("plain writer = %q, want %q", got, "Hello")
+	}
+	if got := noise.String(); got != "⁢⁣" {
+		t.Errorf("noise writer = %q, want %q", got, "⁢⁣")
+	}
+}
+
+func TestDeNoiseAndWriteNoiseReturnsNoiseWriterError(t *testing.T) {
+	noisy := "H⁢ello" // H + INVISIBLE TIMES + ello
+	plain := new(bytes.Buffer)
+	err := DeNoiseAndWriteNoise(strings.NewReader(noisy), plain, failingSimpleNoiseWriter{})
+	if !errors.Is(err, errSimpleNoiseWriter) {
+		t.Fatalf("DeNoiseAndWriteNoise() error = %v, want %v", err, errSimpleNoiseWriter)
+	}
+}
