@@ -45,6 +45,18 @@ func TestVersionCmdReturnsSuccess(t *testing.T) {
 	}
 }
 
+func TestRegisterCommandsIncludesVersion(t *testing.T) {
+	var names []string
+
+	registerCommands(func(command subcommands.Command, _ string) {
+		names = append(names, command.Name())
+	})
+
+	if !containsCommand(names, "version") {
+		t.Fatalf("registered commands = %v, want version", names)
+	}
+}
+
 func TestPrintCommandErrorAddsCommandAndStage(t *testing.T) {
 	stderr := captureStderr(t, func() {
 		printCommandError("decode", "extract hidden message", errors.New("unexpected EOF"))
@@ -90,4 +102,13 @@ func captureStderr(t *testing.T, fn func()) string {
 		t.Fatal(err)
 	}
 	return buf.String()
+}
+
+func containsCommand(commands []string, target string) bool {
+	for _, command := range commands {
+		if command == target {
+			return true
+		}
+	}
+	return false
 }
