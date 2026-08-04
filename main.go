@@ -147,13 +147,18 @@ func (*versionCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{})
 	return subcommands.ExitSuccess
 }
 
+func registerCommands(register func(subcommands.Command, string)) {
+	register(subcommands.HelpCommand(), "")
+	register(subcommands.FlagsCommand(), "")
+	register(subcommands.CommandsCommand(), "")
+	register(&addNoise{}, "")
+	register(&encode{}, "")
+	register(&decode{}, "")
+	register(&versionCmd{}, "")
+}
+
 func main() {
-	subcommands.Register(subcommands.HelpCommand(), "")
-	subcommands.Register(subcommands.FlagsCommand(), "")
-	subcommands.Register(subcommands.CommandsCommand(), "")
-	subcommands.Register(&addNoise{}, "")
-	subcommands.Register(&encode{}, "")
-	subcommands.Register(&decode{}, "")
+	registerCommands(subcommands.Register)
 
 	flag.Parse()
 	ctx := context.Background()
