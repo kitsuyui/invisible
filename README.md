@@ -18,8 +18,8 @@ $ go install github.com/kitsuyui/invisible@latest
 ```
 
 For local development builds, run `go build -o invisible .` from the repository
-root. The `bin/build.sh` script is available for release-style cross-platform
-builds.
+root. Release-style cross-platform builds are produced by the `release`
+GitHub Actions workflow (`.github/workflows/release.yml`) via GoReleaser.
 
 ## Add noise
 
